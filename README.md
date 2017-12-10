@@ -1,0 +1,1 @@
+Assignments solutions for [this class](http://web.stanford.edu/class/cs106b/).
