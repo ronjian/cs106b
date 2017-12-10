@@ -15,6 +15,7 @@ using namespace std;
 void openImage(GBufferedImage &img, string & img_name);
 int askForChoice();
 void saveImage(GBufferedImage &img);
+void scatter(Grid<int> & original, Grid<int> & filtered_grid);
 
 int main() {
     cout << "Welcome to Fauxtoshop!" << endl;
@@ -25,8 +26,8 @@ int main() {
     gw.setExitOnClose(true);
     gw.setVisible(true);
     GBufferedImage img;
-
-    // fakeRandomNumberGenerator();//want the same random numbers on each run
+    //want the same random numbers on each run
+    fakeRandomNumberGenerator();
     string img_name;
     while (true){
         //ask for the image name, and store image in GBufferedImage img
@@ -39,9 +40,13 @@ int main() {
         gw.add(&img,0,0);
         //ask for the filter choice number
         int choice = askForChoice();
-        cout << "Your choice is:" + to_string(choice) << endl;
         //TODO filter step
-
+        Grid<int> original = img.toGrid();
+        Grid<int> filtered_grid(1,1);
+        if(choice == 1){
+            scatter(original, filtered_grid);
+        }
+        img.fromGrid(filtered_grid);
         //ask for file name and save
         saveImage(img);
         //clean Gwindow and image before starting next round
@@ -63,7 +68,7 @@ int main() {
  */
 void openImage(GBufferedImage &img, string & img_name){
     bool result = false;
-    string prompt = "Enter name of image file to open (or blank to quit):";
+    string prompt = "Enter name of image file to open (or blank to quit): ";
     while (not result) {
         cout << prompt;
         getline(cin, img_name);
@@ -73,7 +78,7 @@ void openImage(GBufferedImage &img, string & img_name){
         cout << "Opening image file, may take a minute..." << endl;
         result = openImageFromFilename(img, img_name);
         if (not result){
-            prompt = img_name + " is not valid image name, please re-enter:" ;
+            prompt = img_name + " is not valid image name, please re-enter: " ;
         }
     }
 }
@@ -88,11 +93,11 @@ int askForChoice(){
          << "\t2 - Edge detection\n"
          << "\t3 - \"Green screen\" with another image\n"
          << "\t4 - Compare image with another image\n"
-         << "Your choice:";
+         << "Your choice: ";
     int choice;
     choice = getInteger();
     while (choice != 1 and choice != 2 and choice != 3 and choice !=4) {
-        cout << choice << " is not a valid choice, please choose again:";
+        cout << choice << " is not a valid choice, please choose again: ";
         choice = getInteger();
     }
     return choice;
@@ -105,7 +110,7 @@ int askForChoice(){
  */
 void saveImage(GBufferedImage & img){
     bool result = false;
-    string prompt = "Enter filename to save image (or blank to skip saving):";
+    string prompt = "Enter file name to save image (or blank to skip saving): ";
     string save_img_name;
     while (not result){
         cout << prompt;
@@ -117,7 +122,31 @@ void saveImage(GBufferedImage & img){
         }
         result = saveImageToFilename(img, save_img_name);
         if (not result){
-            prompt = save_img_name + " is not a valid filename, please re-enter";
+            prompt = save_img_name + " is not a valid file name, please re-enter: ";
+        }
+    }
+}
+
+/*
+ * 1.ask for degree/radius of scatter
+ * 2.select a random pixel
+ * 3.if the random pixel is out of the bound of the image, redo selecting.
+ */
+void scatter(Grid<int> & original, Grid<int> & filtered_grid){
+    string prompt = "Enter degree of scatter [1-100]: ";
+    int radius=getIntegerBetween(prompt, 1, 100);
+    const int height = original.height();
+    const int width = original.width();
+    filtered_grid.resize(height, width);
+    for(int h=0; h < height; h++){
+        for(int w=0; w < width; w++){
+            int w_new;
+            int h_new;
+            do{
+                w_new = randomInteger(w - radius, w + radius);
+                h_new = randomInteger(h - radius, h + radius);
+            }while(not original.inBounds(h_new, w_new));
+            filtered_grid[h][w] = original.get(h_new, w_new);
         }
     }
 }
