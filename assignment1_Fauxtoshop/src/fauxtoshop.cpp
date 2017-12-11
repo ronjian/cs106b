@@ -9,15 +9,23 @@
 #include "gwindow.h"
 #include "fauxtoshop-provided.h"   // instructor-provided code
 #include "simpio.h"   // Stanford library I/O helpers
+#include "math.h"
 using namespace std;
 
 
 void openImage(GBufferedImage &img, string & img_name);
 int askForChoice();
 void saveImage(GBufferedImage &img);
-void scatter(Grid<int> & original, Grid<int> & filtered_grid);
+void scatter(const Grid<int> & original, Grid<int> & filtered_grid, const int height, const int width);
+void edgeDetection(const Grid<int> & original, Grid<int> & filtered_grid
+                   , const int height, const int width, const int WHITE, const int BLACK);
 
 int main() {
+    // pre-defined color constants
+    const int WHITE = 0xFFFFFF;
+    const int BLACK = 0x000000;
+    const int GREEN = 0x00FF00;
+
     cout << "Welcome to Fauxtoshop!" << endl;
 
     // basic setup of Graphics Window
@@ -40,11 +48,14 @@ int main() {
         gw.add(&img,0,0);
         //ask for the filter choice number
         int choice = askForChoice();
-        //TODO filter step
         Grid<int> original = img.toGrid();
-        Grid<int> filtered_grid(1,1);
+        const int height = original.height();
+        const int width = original.width();
+        Grid<int> filtered_grid(height, width);
         if(choice == 1){
-            scatter(original, filtered_grid);
+            scatter(original, filtered_grid, height, width);
+        }else if(choice == 2){
+            edgeDetection(original, filtered_grid, height, width, WHITE, BLACK);
         }
         img.fromGrid(filtered_grid);
         //ask for file name and save
@@ -86,20 +97,19 @@ void openImage(GBufferedImage &img, string & img_name){
  * ask for the choice number of filtering,
  * limit the choice number in (1,2,3,4).
  * return choice number as integer.
+ * reference for concating string:
+ * https://stackoverflow.com/questions/662918/how-do-i-concatenate-multiple-c-strings-on-one-line
  */
 int askForChoice(){
-    cout << "Which image filter would you like to apply?\n"
-         << "\t1 - Scatter\n"
-         << "\t2 - Edge detection\n"
-         << "\t3 - \"Green screen\" with another image\n"
-         << "\t4 - Compare image with another image\n"
-         << "Your choice: ";
-    int choice;
-    choice = getInteger();
-    while (choice != 1 and choice != 2 and choice != 3 and choice !=4) {
-        cout << choice << " is not a valid choice, please choose again: ";
-        choice = getInteger();
-    }
+    stringstream ss;
+    ss << "Which image filter would you like to apply?\n"
+         <<"\t1 - Scatter\n"
+         <<"\t2 - Edge detection\n"
+         <<"\t3 - \"Green screen\" with another image\n"
+         <<"\t4 - Compare image with another image\n"
+         <<"Your choice: ";
+    string prompt = ss.str();
+    int choice = getIntegerBetween(prompt,1,4);
     return choice;
 }
 
@@ -132,12 +142,9 @@ void saveImage(GBufferedImage & img){
  * 2.select a random pixel
  * 3.if the random pixel is out of the bound of the image, redo selecting.
  */
-void scatter(Grid<int> & original, Grid<int> & filtered_grid){
+void scatter(const Grid<int> & original, Grid<int> & filtered_grid, const int height, const int width){
     string prompt = "Enter degree of scatter [1-100]: ";
     int radius=getIntegerBetween(prompt, 1, 100);
-    const int height = original.height();
-    const int width = original.width();
-    filtered_grid.resize(height, width);
     for(int h=0; h < height; h++){
         for(int w=0; w < width; w++){
             int w_new;
@@ -149,4 +156,53 @@ void scatter(Grid<int> & original, Grid<int> & filtered_grid){
             filtered_grid[h][w] = original.get(h_new, w_new);
         }
     }
+}
+/*
+ * 1.ask for threshold for edge detection
+ * 2.loop each pixel in the image,
+ * 3.if get true from edgeIdentificator,
+ * then set as color BLACK in new image,
+*/
+bool edgeIdentificator(const Grid<int> & original, const int row, const int col, const int threshold) ;
+void edgeDetection(const Grid<int> & original, Grid<int> & filtered_grid
+                   , const int height, const int width, const int WHITE, const int BLACK){
+    //ask for threshold
+    string prompt = "Enter threshold for edge detection: ";
+    const int threshold = getInteger(prompt);
+    //loop all pixels
+    for (int row =0 ; row <height ; row++){
+        for (int col = 0; col < width ; col++ ){
+            if (edgeIdentificator(original, row, col, threshold)){
+                filtered_grid[row][col] = BLACK;
+            }else {
+                filtered_grid[row][col] = WHITE;
+            }
+        }
+    }
+}
+/*
+ * focus on one pixel and identify if it is edge.
+ * if any distance(Euclidean distance between RGB values treated as vectors of dimension 3)
+ * of the pixel with its neighbors
+ * pixels (nearby 9 pixels, include itself)
+ * is greater than the threshold, then it is edge, return true.
+ */
+bool edgeIdentificator(const Grid<int> & original, const int row, const int col, const int threshold) {
+    const int current_pixel = original[row][col];
+    int red, green, blue;
+    GBufferedImage::getRedGreenBlue(current_pixel, red, green, blue);
+    for (int r=row-1; r <= row+1; r++){
+        for (int c=col-1; c <= col+1; c++){
+            if (original.inBounds(r,c)){
+                int neighbor = original[r][c];
+                int n_red, n_green, n_blue;
+                GBufferedImage::getRedGreenBlue(neighbor, n_red, n_green, n_blue);
+                int distance = sqrt(pow((red-n_red),2) + pow((green-n_green),2) + pow((blue-n_blue),2));
+                if (distance > threshold){
+                    return true;
+                }
+            }
+        }
+    }
+   return false;
 }
