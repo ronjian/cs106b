@@ -10,6 +10,7 @@
 #include "fauxtoshop-provided.h"   // instructor-provided code
 #include "simpio.h"   // Stanford library I/O helpers
 #include "math.h"
+#include "gevents.h"
 using namespace std;
 
 
@@ -19,7 +20,8 @@ void saveImage(GBufferedImage &img);
 void scatter(const Grid<int> & original, Grid<int> & filtered_grid, const int height, const int width);
 void edgeDetection(const Grid<int> & original, Grid<int> & filtered_grid
                    , const int height, const int width, const int WHITE, const int BLACK);
-
+void greenScreen(const Grid<int> & original, Grid<int> & filtered_grid,
+                  const int height, const int width, const GWindow gw, const int GREEN);
 int main() {
     // pre-defined color constants
     const int WHITE = 0xFFFFFF;
@@ -56,6 +58,8 @@ int main() {
             scatter(original, filtered_grid, height, width);
         }else if(choice == 2){
             edgeDetection(original, filtered_grid, height, width, WHITE, BLACK);
+        }else if(choice == 3){
+            greenScreen(original, filtered_grid, height, width, gw, GREEN);
         }
         img.fromGrid(filtered_grid);
         //ask for file name and save
@@ -205,4 +209,76 @@ bool edgeIdentificator(const Grid<int> & original, const int row, const int col,
         }
     }
    return false;
+}
+/*
+ *1.ask for sticker image
+ *2.ask for threshold to tolerate pure green
+ *3.loop each pixel in filtered_grid, if in sticker range
+ * and the difference with pure green is greater
+ * than threshold, then sticker pixel, else original pixel.
+ */
+void greenScreen(const Grid<int> & original, Grid<int> & filtered_grid
+                 , const int height, const int width, const GWindow gw , const int GREEN){
+    //ask for sticker image
+    string sticker_name;
+    bool open_resule = false;
+    string prompt = "Now choose another file to add to your background image.\nEnter name of image file to open: ";
+    GBufferedImage sticker_img;
+
+    while (not open_resule) {
+        cout << prompt;
+        getline(cin, sticker_name);
+        cout << "Opening image file, may take a minute..." << endl;
+        open_resule = openImageFromFilename(sticker_img, sticker_name);
+        if (not open_resule){
+            prompt = sticker_name + " is not valid image name, please re-enter: " ;
+        }
+    }
+    //ask for threshold to tolerate pure green
+    int threshold = getIntegerBetween("Now choose a tolerance threshold (0-100): ",0,100);
+
+    //askk for position
+    string position;
+    do{
+        cout << "Enter location to place image as \"(row,col)\" (or blank to use mouse):";
+//        GMouseEvent e = waitForClick();
+//        int start_row = e.getX();
+//        int start_col = e.getY();
+        getline(cin, position);
+    }while (position == "");
+
+    int comma_loc = position.find(",");
+    const int start_row=stoi(position.substr(1 , comma_loc ) );
+    const int start_col=stoi(position.substr(comma_loc + 1 , position.length() - comma_loc ) );
+    const Grid<int> sticker_grid = sticker_img.toGrid();
+    const int sticker_height = sticker_grid.height();
+    const int sticker_width = sticker_grid.width();
+    const int end_row = start_row + sticker_height - 1;
+    const int end_col = start_col + sticker_width - 1 ;
+    int red, green, blue;
+    GBufferedImage::getRedGreenBlue(GREEN, red, green, blue);
+    //loop each pixel
+    for (int row=0; row < height ; row++ ){
+        for (int col = 0; col < width; col++){
+
+            if(start_row <= row and row <= end_row and
+                    start_col <= col and col <= end_col){
+                int sticker_pixel = sticker_grid[row - start_row ][col - start_col ];
+                int n_red, n_green, n_blue;
+                GBufferedImage::getRedGreenBlue(sticker_pixel, n_red, n_green, n_blue);
+                int distance = sqrt(pow((red-n_red),2) + pow((green-n_green),2) + pow((blue-n_blue),2));
+                if (distance > threshold){
+                    filtered_grid[row][col] = sticker_pixel;
+                }else{
+                    filtered_grid[row][col] = original[row][col];
+                }
+            }else{
+                filtered_grid[row][col] = original[row][col];
+            }
+
+        }
+    }
+
+
+
 }
