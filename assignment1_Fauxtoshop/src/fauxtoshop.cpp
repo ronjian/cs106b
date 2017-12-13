@@ -22,6 +22,8 @@ void edgeDetection(const Grid<int> & original, Grid<int> & filtered_grid
                    , const int height, const int width, const int WHITE, const int BLACK);
 void greenScreen(const Grid<int> & original, Grid<int> & filtered_grid,
                   const int height, const int width, const GWindow gw, const int GREEN);
+void compareImages(const Grid<int> & original,const int height, const int width,const GWindow gw);
+
 int main() {
     // pre-defined color constants
     const int WHITE = 0xFFFFFF;
@@ -60,10 +62,14 @@ int main() {
             edgeDetection(original, filtered_grid, height, width, WHITE, BLACK);
         }else if(choice == 3){
             greenScreen(original, filtered_grid, height, width, gw, GREEN);
+        }else if(choice == 4){
+            compareImages(original, height, width, gw);
         }
-        img.fromGrid(filtered_grid);
-        //ask for file name and save
-        saveImage(img);
+        if (choice != 4){
+            img.fromGrid(filtered_grid);
+            //ask for file name and save
+            saveImage(img);
+        }
         //clean Gwindow and image before starting next round
         img.clear();
         gw.clear();
@@ -94,6 +100,9 @@ void openImage(GBufferedImage &img, string & img_name){
         result = openImageFromFilename(img, img_name);
         if (not result){
             prompt = img_name + " is not valid image name, please re-enter: " ;
+        }else{
+            //in case user input "?" to choose images, recall the file name.
+            img_name = img.getFilename();
         }
     }
 }
@@ -278,7 +287,34 @@ void greenScreen(const Grid<int> & original, Grid<int> & filtered_grid
 
         }
     }
-
-
+}
+/*
+ *1.ask for another image to compare
+ *2.loop to count discrepent pixels
+ *3.output the difference count number
+ *3.show diffImage Gwindow
+ */
+void compareImages(const Grid<int> & original,const int height, const int width,const GWindow gw){
+    GBufferedImage another_img;
+    string another_img_name;
+    openImage(another_img, another_img_name);
+    const Grid<int> another_img_grid = another_img.toGrid();
+    int count = 0;
+    for (int row=0; row < height ; row++ ){
+        for (int col = 0; col < width; col++){
+            if (another_img_grid.inBounds(row,col)
+                    and original[row][col] == another_img_grid[row][col]){
+                continue;
+            }else{
+                count++;
+            }
+        }
+    }
+    cout << "These images differ in "
+         << to_string(count)
+         <<" pixel locations!" << endl;
+    if (count>0){
+        showDiffWindow(gw, another_img_name);
+    }
 
 }
