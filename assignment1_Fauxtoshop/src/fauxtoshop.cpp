@@ -247,18 +247,28 @@ void greenScreen(const Grid<int> & original, Grid<int> & filtered_grid
     int threshold = getIntegerBetween("Now choose a tolerance threshold (0-100): ",0,100);
 
     //askk for position
-    string position;
+    int start_row=0;
+    int start_col=0;
     do{
+        string position="";
         cout << "Enter location to place image as \"(row,col)\" (or blank to use mouse):";
-//        GMouseEvent e = waitForClick();
-//        int start_row = e.getX();
-//        int start_col = e.getY();
         getline(cin, position);
-    }while (position == "");
+        if (position == "" ){
+            cout << "Now double click the backgroud image to place new image: " << endl;
+            getMouseClickLocation(start_row, start_col);
+            cout << "Your choice (" << to_string(start_row) << "," << to_string(start_col) << ")" << endl;
+        }else{
+            try{
+                int comma_loc = position.find(",");
+                start_row=stoi(position.substr(1 , comma_loc ) );
+                start_col=stoi(position.substr(comma_loc + 1 , position.length() - comma_loc ) );
+            }catch(exception){
+                continue;
+            }
 
-    int comma_loc = position.find(",");
-    const int start_row=stoi(position.substr(1 , comma_loc ) );
-    const int start_col=stoi(position.substr(comma_loc + 1 , position.length() - comma_loc ) );
+        }
+    }while(start_row <=0 or start_row >height or start_col <=0 or start_col > width);
+
     const Grid<int> sticker_grid = sticker_img.toGrid();
     const int sticker_height = sticker_grid.height();
     const int sticker_width = sticker_grid.width();
@@ -297,6 +307,7 @@ void greenScreen(const Grid<int> & original, Grid<int> & filtered_grid
 void compareImages(const Grid<int> & original,const int height, const int width,const GWindow gw){
     GBufferedImage another_img;
     string another_img_name;
+    cout << "Now choose another image file to compare to." << endl;
     openImage(another_img, another_img_name);
     const Grid<int> another_img_grid = another_img.toGrid();
     int count = 0;
