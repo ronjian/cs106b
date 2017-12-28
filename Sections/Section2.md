@@ -146,7 +146,33 @@ string rarest(const Map<string, string> & input_map){
 }
 ```
 ### problem3
-[evaluateMathExpression](https://codestepbystep.com/problem/view/cpp/recursion/evaluateMathExpression?problemsetid=4)
+[evaluateMathExpression](https://codestepbystep.com/problem/view/cpp/recursion/evaluateMathExpression?problemsetid=4)  
+```c++
+int evaluate(const string & s, int & i ){
+    if(i > s.length()){
+        return 0;
+    }
+    char ch = s[i++];
+    if (isdigit(ch)){
+        return ch - '0';
+    }else {
+        int left = evaluate(s, i);
+        char op = s[i++];
+        int right = evaluate(s, i);
+        i++;
+        if (op == '+'){
+            return left + right;
+        } else {
+            return left * right;
+        }
+    }
+}
+
+int evaluateMathExpression(const string & s){
+    int i = 0 ;
+    return evaluate(s, i);
+}
+```
 
 ### problem4
 [recursionMysteryComma](https://codestepbystep.com/problem/view/cpp/recursion/recursionMysteryComma?problemsetid=4)
