@@ -116,12 +116,56 @@ void diceSum(int n, int sum){
     </img>
 </p>
 
+Answer:
+```c++
+int largestSum(vector<int> & V, int N){
+    if (N <= 0 || V.empty()){
+        return 0 ;
+    }else{
+        int last = V.back();
+        V.pop_back();
+        int max_sum = largestSum(V, N);
+        if (last <= N){
+            int max_with_last = last + largestSum(V, N-last);
+            max_sum = max(max_sum , max_with_last);
+        }
+        V.push_back(last);
+        return max_sum;
+    }
+}
+```
+The recursion loop each element in the vector, and every time remove the element.  
+For each element, there is two choice: largest number with or without the element.  
+
 ### problem5
 
 <p align="center">
     <img src="assets/s3_5.png" width="600">
     </img>
 </p>
+
+Answer:
+```c++
+int longestCommonSebsequence(string s1, string s2){
+    if(s1.size()>0 && s2.size()>0){
+        char s1_head = s1[0];
+        string s1_rest = s1.substr(1,s1.size());
+        //without s1_head
+        int longest_length= longestCommonSebsequence(s1_rest, s2);
+        //with s1_head, explore if can find s1_head in s2
+        if(s2.find_first_of(s1_head) != string::npos){
+            string s2_rest = s2.substr(s2.find_first_of(s1_head)+1, s2.size());
+            int longest_length_with = 1 + longestCommonSebsequence(s1_rest , s2_rest);
+            longest_length = max(longest_length, longest_length_with);
+        }
+        return longest_length;
+    }else{
+        return 0;
+    }
+}
+```
+similiar solution with previous problem.
+
 
 ### problem6
 
@@ -130,9 +174,59 @@ void diceSum(int n, int sum){
     </img>
 </p>
 
+Answer:
+```c++
+void printVector(vector<int> V){
+    cout << "{" ;
+    for(int i=0; i < V.size(); i++){
+        if (i == 0){
+            cout << to_string(V[i]) ;
+        }else{
+            cout << ", " << to_string(V[i]) ;
+        }
+    }
+    cout << "}" << endl;
+}
+
+void makeChangeHelper(vector<int> V, int N, vector<int> record){
+    if (!V.empty()){
+        int last = V.back();
+        V.pop_back();
+        for (int i=0 ; i <= (N / last); i++){
+            vector<int> new_record = record;
+            new_record.insert(new_record.begin(), i);
+            makeChangeHelper(V, N - last*i, new_record);
+        }
+    }else if(N == 0){
+        printVector(record);
+    }
+}
+
+void makeChange(vector<int> V, const int N){
+    vector<int> record;
+    makeChangeHelper(V, N, record);
+}
+```
+
 ### problem7
 
 <p align="center">
     <img src="assets/s3_7.png" width="600">
     </img>
 </p>
+
+Answer:
+```c++
+bool canBalance(vector<int> V, int N){
+    if ( !V.empty() ){
+        int last = V.back();
+        V.pop_back();
+        if (canBalance(V, N + last) || canBalance(V, N - last)){
+            return true;
+        }
+    }else if (N == 0) {
+        return true;
+    }
+    return false;
+}
+```
