@@ -2,23 +2,23 @@ problems set: https://www.codestepbystep.com/problem/list
 
 ## Agenda:  
 
-- [Problem1](#Problem1)
-- [Problem2](#Problem2)
-- [Problem3](#Problem3)
-- [Problem4](#Problem4)
-- [Problem5](#Problem5)
-- [Problem6](#Problem6)
-- [Problem7](#Problem7)
-- [Problem8](#Problem8)
+- [Problem1](#problem1)
+- [Problem2](#problem2)
+- [Problem3](#problem3)
+- [Problem4](#problem4)
+- [Problem5](#problem5)
+- [Problem6](#problem6)
+- [Problem7](#problem7)
+- [Problem8](#problem8)
 
 
-## Problem1
+## problem1
 
 https://www.codestepbystep.com/problem/view/cpp/pointers/v1v2p1p2:  
 
 <img src="assets/v1v2p1p2.png" width="600"><img/>
 
-## Problem2
+## problem2
 
 https://www.codestepbystep.com/problem/view/cpp/pointers/parameterMystery1:  
 
@@ -101,13 +101,13 @@ a is: 4 at: 0x7ffee9d6fa2c
 c is: 1 at: 0x7ffee9d6fa24
 ```
 
-## Problem3
+## problem3
 
 https://www.codestepbystep.com/problem/view/cpp/pointers/parameterMystery1X
 
 <img src="assets/parameterMystery1.png" width="600"><img/>
 
-## Problem4
+## problem4
 
 https://www.codestepbystep.com/problem/view/cpp/pointers/parameterMystery2X
 
@@ -186,7 +186,7 @@ s5  | heap address "0x777700" with value "yo1!!!2" | 0x5500
 
 
 
-## Problem5
+## problem5
 
 https://www.codestepbystep.com/problem/view/cpp/pointers/parameterMystery3
 
@@ -272,7 +272,7 @@ x        | 7     | xx
 y        | 2     | yy
 z        | 9     | zz
 
-## Problem6
+## problem6
 
 https://www.codestepbystep.com/problem/view/cpp/pointers/parameterMystery4
 
@@ -349,7 +349,7 @@ c        | -4    | 0xcc00
 d        | 9    | 0xdd00
 
 
-## Problem7
+## problem7
 
 https://www.codestepbystep.com/problem/view/cpp/pointers/parameterMystery5  
 
@@ -424,7 +424,7 @@ e        | 15     | 0xee00
 f        | 9     | 0xff00
 
 
-## Problem8
+## problem8
 
 https://www.codestepbystep.com/problem/view/cpp/pointers/parameterMystery9
 
